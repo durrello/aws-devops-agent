@@ -57,7 +57,7 @@ resource "aws_lambda_function" "orchestrator" {
   environment {
     variables = {
       AGENT_ID       = aws_bedrockagent_agent.devops.id
-      AGENT_ALIAS_ID = aws_bedrockagent_agent_alias.live.id
+      AGENT_ALIAS_ID = aws_bedrockagent_agent_alias.live.agent_alias_id
       AUDIT_TABLE    = aws_dynamodb_table.audit.name
       KILL_SWITCH    = aws_ssm_parameter.enabled.name
     }

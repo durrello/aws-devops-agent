@@ -10,7 +10,7 @@ output "agent_id" {
 
 output "agent_alias_id" {
   description = "Bedrock Agent Alias ID (for invoke-agent calls)"
-  value       = aws_bedrockagent_agent_alias.live.id
+  value       = aws_bedrockagent_agent_alias.live.agent_alias_id
 }
 
 output "audit_table" {

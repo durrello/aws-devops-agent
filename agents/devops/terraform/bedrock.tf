@@ -9,7 +9,7 @@ resource "aws_bedrock_guardrail" "agent" {
   description = "Blocks prompt injection, off-topic requests, and attempts to bypass controls"
 
   blocked_input_messaging  = "I can't help with that request — it's outside my allowed scope."
-  blocked_output_messaging = "Response blocked by guardrails."
+  blocked_outputs_messaging = "Response blocked by guardrails."
 
   content_policy_config {
     filters_config {

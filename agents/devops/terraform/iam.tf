@@ -7,7 +7,7 @@ data "aws_region" "current" {}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
-  region     = data.aws_region.current.name
+  region     = data.aws_region.current.region
 }
 
 # ── Bedrock Agent execution role ─────────────────────────────────────────────
@@ -125,4 +125,32 @@ resource "aws_ssm_parameter" "enabled" {
   value = "true"
 
   description = "Set to 'false' to instantly disable the DevOps Agent (kill switch)"
+}
+
+# The orchestrator Lambda needs bedrock:InvokeAgent to call the Bedrock Agent.
+resource "aws_iam_role_policy" "tool_readonly_bedrock" {
+  name = "invoke-bedrock-agent"
+  role = aws_iam_role.tool_readonly.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["bedrock:InvokeAgent"]
+      Resource = "arn:aws:bedrock:${data.aws_region.current.region}:${local.account_id}:agent-alias/${aws_bedrockagent_agent.devops.id}/*"
+    }]
+  })
+}
+
+# The Bedrock Agent needs to invoke the foundation model.
+resource "aws_iam_role_policy" "agent_invoke_model" {
+  name = "invoke-foundation-model"
+  role = aws_iam_role.agent.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"]
+      Resource = "arn:aws:bedrock:${data.aws_region.current.region}::foundation-model/${var.bedrock_model_id}"
+    }]
+  })
 }
