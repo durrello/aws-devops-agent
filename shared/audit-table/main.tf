@@ -6,8 +6,15 @@ resource "aws_dynamodb_table" "audit" {
   hash_key     = "request_id"
   range_key    = "timestamp"
 
-  attribute { name = "request_id"; type = "S" }
-  attribute { name = "timestamp"; type = "S" }
+  attribute {
+    name = "request_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "timestamp"
+    type = "S"
+  }
 
   tags = { Project = var.project }
 }
