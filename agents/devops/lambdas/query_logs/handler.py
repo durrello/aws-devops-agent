@@ -1,4 +1,5 @@
 """Tool: query_cloudwatch_logs — searches recent log events for errors/patterns."""
+
 import json
 import os
 import time
@@ -35,7 +36,9 @@ def lambda_handler(event, context):
         if not events:
             result = f"No log events matching '{pattern}' in {log_group} (last {minutes_back} min)."
         else:
-            lines = [f"Found {len(events)} event(s) matching '{pattern}' in {log_group}:"]
+            lines = [
+                f"Found {len(events)} event(s) matching '{pattern}' in {log_group}:"
+            ]
             for e in events[:10]:
                 ts = datetime.fromtimestamp(e["timestamp"] / 1000).strftime("%H:%M:%S")
                 msg = e["message"].strip()[:200]
@@ -48,13 +51,15 @@ def lambda_handler(event, context):
 
     # Audit
     try:
-        ddb.put_item(Item={
-            "request_id": context.aws_request_id,
-            "timestamp": datetime.utcnow().isoformat(),
-            "tool": "query_logs",
-            "params": json.dumps(param_map),
-            "result_preview": result[:500],
-        })
+        ddb.put_item(
+            Item={
+                "request_id": context.aws_request_id,
+                "timestamp": datetime.utcnow().isoformat(),
+                "tool": "query_logs",
+                "params": json.dumps(param_map),
+                "result_preview": result[:500],
+            }
+        )
     except Exception:
         pass
 

@@ -1,4 +1,5 @@
 """Tool: check_deployment_status — queries CodeDeploy or ECS service deployments."""
+
 import json
 import os
 from datetime import datetime
@@ -42,10 +43,14 @@ def lambda_handler(event, context):
             if not ids:
                 result = "No recent CodeDeploy deployments found."
             else:
-                details = codedeploy.batch_get_deployments(deploymentIds=ids)["deploymentsInfo"]
+                details = codedeploy.batch_get_deployments(deploymentIds=ids)[
+                    "deploymentsInfo"
+                ]
                 lines = []
                 for d in details:
-                    lines.append(f"  {d['deploymentId']}: {d['status']} ({d.get('completeTime', 'in progress')})")
+                    lines.append(
+                        f"  {d['deploymentId']}: {d['status']} ({d.get('completeTime', 'in progress')})"
+                    )
                 result = "Recent CodeDeploy deployments:\n" + "\n".join(lines)
         else:
             result = "Please specify service_type ('ecs' or 'codedeploy') and relevant parameters."
@@ -54,13 +59,15 @@ def lambda_handler(event, context):
 
     # Audit
     try:
-        ddb.put_item(Item={
-            "request_id": context.aws_request_id,
-            "timestamp": datetime.utcnow().isoformat(),
-            "tool": "check_deployment",
-            "params": json.dumps(param_map),
-            "result_preview": result[:500],
-        })
+        ddb.put_item(
+            Item={
+                "request_id": context.aws_request_id,
+                "timestamp": datetime.utcnow().isoformat(),
+                "tool": "check_deployment",
+                "params": json.dumps(param_map),
+                "result_preview": result[:500],
+            }
+        )
     except Exception:
         pass
 

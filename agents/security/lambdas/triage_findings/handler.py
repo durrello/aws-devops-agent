@@ -1,4 +1,5 @@
 """Tool: triage_findings — queries Security Hub for active CRITICAL/HIGH findings."""
+
 import json
 import os
 from datetime import datetime
@@ -16,12 +17,17 @@ def lambda_handler(event, context):
 
     try:
         filters = {
-            "SeverityLabel": [{"Value": s.strip(), "Comparison": "EQUALS"} for s in severity],
+            "SeverityLabel": [
+                {"Value": s.strip(), "Comparison": "EQUALS"} for s in severity
+            ],
             "WorkflowStatus": [{"Value": "NEW", "Comparison": "EQUALS"}],
             "RecordState": [{"Value": "ACTIVE", "Comparison": "EQUALS"}],
         }
-        resp = sh.get_findings(Filters=filters, MaxResults=max_results,
-                               SortCriteria=[{"Field": "SeverityLabel", "SortOrder": "desc"}])
+        resp = sh.get_findings(
+            Filters=filters,
+            MaxResults=max_results,
+            SortCriteria=[{"Field": "SeverityLabel", "SortOrder": "desc"}],
+        )
         findings = resp.get("Findings", [])
         if not findings:
             result = f"No active {'/'.join(severity)} findings in Security Hub. ✅"
@@ -37,10 +43,15 @@ def lambda_handler(event, context):
         result = f"Error querying Security Hub: {str(e)}"
 
     try:
-        ddb.put_item(Item={"request_id": context.aws_request_id,
-                           "timestamp": datetime.utcnow().isoformat(),
-                           "tool": "triage_findings", "params": json.dumps(params),
-                           "result_preview": result[:500]})
+        ddb.put_item(
+            Item={
+                "request_id": context.aws_request_id,
+                "timestamp": datetime.utcnow().isoformat(),
+                "tool": "triage_findings",
+                "params": json.dumps(params),
+                "result_preview": result[:500],
+            }
+        )
     except Exception:
         pass
     return {"response": result}

@@ -1,4 +1,5 @@
 """Tool: describe_infrastructure — lists EC2, ECS, RDS, Lambda resources + health."""
+
 import json
 import os
 from datetime import datetime
@@ -22,24 +23,40 @@ def lambda_handler(event, context):
     try:
         if resource_type in ("all", "ec2"):
             instances = ec2.describe_instances(
-                Filters=[{"Name": "instance-state-name", "Values": ["running", "stopped"]}],
+                Filters=[
+                    {"Name": "instance-state-name", "Values": ["running", "stopped"]}
+                ],
                 MaxResults=20,
             )
             items = []
             for r in instances.get("Reservations", []):
                 for i in r["Instances"]:
-                    name = next((t["Value"] for t in i.get("Tags", []) if t["Key"] == "Name"), "—")
-                    items.append(f"  {i['InstanceId']} ({i['InstanceType']}) — {i['State']['Name']} — {name}")
-            sections.append(f"EC2 ({len(items)} instances):\n" + ("\n".join(items) or "  (none)"))
+                    name = next(
+                        (t["Value"] for t in i.get("Tags", []) if t["Key"] == "Name"),
+                        "—",
+                    )
+                    items.append(
+                        f"  {i['InstanceId']} ({i['InstanceType']}) — {i['State']['Name']} — {name}"
+                    )
+            sections.append(
+                f"EC2 ({len(items)} instances):\n" + ("\n".join(items) or "  (none)")
+            )
 
         if resource_type in ("all", "ecs"):
             clusters = ecs_client.list_clusters().get("clusterArns", [])
-            sections.append(f"ECS: {len(clusters)} cluster(s): {', '.join(c.split('/')[-1] for c in clusters) or '(none)'}")
+            sections.append(
+                f"ECS: {len(clusters)} cluster(s): {', '.join(c.split('/')[-1] for c in clusters) or '(none)'}"
+            )
 
         if resource_type in ("all", "rds"):
             dbs = rds.describe_db_instances().get("DBInstances", [])
-            items = [f"  {d['DBInstanceIdentifier']} ({d['Engine']}) — {d['DBInstanceStatus']}" for d in dbs]
-            sections.append(f"RDS ({len(dbs)} instances):\n" + ("\n".join(items) or "  (none)"))
+            items = [
+                f"  {d['DBInstanceIdentifier']} ({d['Engine']}) — {d['DBInstanceStatus']}"
+                for d in dbs
+            ]
+            sections.append(
+                f"RDS ({len(dbs)} instances):\n" + ("\n".join(items) or "  (none)")
+            )
 
         if resource_type in ("all", "lambda"):
             fns = lam.list_functions(MaxItems=20).get("Functions", [])
@@ -51,13 +68,15 @@ def lambda_handler(event, context):
 
     # Audit
     try:
-        ddb.put_item(Item={
-            "request_id": context.aws_request_id,
-            "timestamp": datetime.utcnow().isoformat(),
-            "tool": "describe_infra",
-            "params": json.dumps(param_map),
-            "result_preview": result[:500],
-        })
+        ddb.put_item(
+            Item={
+                "request_id": context.aws_request_id,
+                "timestamp": datetime.utcnow().isoformat(),
+                "tool": "describe_infra",
+                "params": json.dumps(param_map),
+                "result_preview": result[:500],
+            }
+        )
     except Exception:
         pass
 

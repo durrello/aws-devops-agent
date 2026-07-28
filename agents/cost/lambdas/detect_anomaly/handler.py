@@ -1,4 +1,5 @@
 """Tool: detect_anomaly — queries AWS Cost Anomaly Detection for unusual charges."""
+
 import json
 import os
 from datetime import datetime, timedelta
@@ -25,21 +26,30 @@ def lambda_handler(event, context):
         if not anomalies:
             result = f"No cost anomalies detected in the last {days_back} days. ✅"
         else:
-            lines = [f"⚠️ {len(anomalies)} cost anomaly/anomalies detected (last {days_back} days):"]
+            lines = [
+                f"⚠️ {len(anomalies)} cost anomaly/anomalies detected (last {days_back} days):"
+            ]
             for a in anomalies:
                 impact = a.get("Impact", {})
                 total = impact.get("TotalImpact", 0)
                 svc = a.get("RootCauses", [{}])[0].get("Service", "Unknown")
-                lines.append(f"  ${total:.2f} unexpected spend — {svc} ({a.get('AnomalyId','')[:8]})")
+                lines.append(
+                    f"  ${total:.2f} unexpected spend — {svc} ({a.get('AnomalyId', '')[:8]})"
+                )
             result = "\n".join(lines)
     except Exception as e:
         result = f"Error querying anomalies: {str(e)}"
 
     try:
-        ddb.put_item(Item={"request_id": context.aws_request_id,
-                           "timestamp": datetime.utcnow().isoformat(),
-                           "tool": "detect_anomaly", "params": json.dumps(params),
-                           "result_preview": result[:500]})
+        ddb.put_item(
+            Item={
+                "request_id": context.aws_request_id,
+                "timestamp": datetime.utcnow().isoformat(),
+                "tool": "detect_anomaly",
+                "params": json.dumps(params),
+                "result_preview": result[:500],
+            }
+        )
     except Exception:
         pass
     return {"response": result}

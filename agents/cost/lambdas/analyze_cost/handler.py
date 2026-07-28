@@ -1,4 +1,5 @@
 """Tool: analyze_cost — queries Cost Explorer for spend by service/period."""
+
 import json
 import os
 from datetime import datetime, timedelta
@@ -45,10 +46,15 @@ def lambda_handler(event, context):
 
     # Audit
     try:
-        ddb.put_item(Item={"request_id": context.aws_request_id,
-                           "timestamp": datetime.utcnow().isoformat(),
-                           "tool": "analyze_cost", "params": json.dumps(params),
-                           "result_preview": result[:500]})
+        ddb.put_item(
+            Item={
+                "request_id": context.aws_request_id,
+                "timestamp": datetime.utcnow().isoformat(),
+                "tool": "analyze_cost",
+                "params": json.dumps(params),
+                "result_preview": result[:500],
+            }
+        )
     except Exception:
         pass
     return {"response": result}

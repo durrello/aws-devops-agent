@@ -1,5 +1,6 @@
 """Orchestrator Lambda — receives HTTP requests, checks the kill switch, invokes the
 Bedrock Agent, and logs the interaction to DynamoDB."""
+
 import json
 import os
 import uuid
@@ -22,7 +23,9 @@ def lambda_handler(event, context):
     try:
         enabled = ssm.get_parameter(Name=KILL_SWITCH)["Parameter"]["Value"]
         if enabled.lower() != "true":
-            return respond(503, {"error": "DevOps Agent is currently disabled (kill switch)."})
+            return respond(
+                503, {"error": "DevOps Agent is currently disabled (kill switch)."}
+            )
     except Exception:
         pass  # If we can't read the switch, proceed (fail-open for reads; tighten if needed).
 
@@ -54,14 +57,18 @@ def lambda_handler(event, context):
 
     # Audit log
     try:
-        ddb.put_item(Item={
-            "request_id": request_id,
-            "timestamp": datetime.utcnow().isoformat(),
-            "session_id": session_id,
-            "input": user_input[:1000],
-            "output": output_text[:2000],
-            "source_ip": event.get("requestContext", {}).get("http", {}).get("sourceIp", "unknown"),
-        })
+        ddb.put_item(
+            Item={
+                "request_id": request_id,
+                "timestamp": datetime.utcnow().isoformat(),
+                "session_id": session_id,
+                "input": user_input[:1000],
+                "output": output_text[:2000],
+                "source_ip": event.get("requestContext", {})
+                .get("http", {})
+                .get("sourceIp", "unknown"),
+            }
+        )
     except Exception:
         pass  # Don't fail the request if audit write fails (log it separately).
 

@@ -1,4 +1,5 @@
 """Tool: triage_alarm — reads a CloudWatch alarm state + recent datapoints."""
+
 import json
 import os
 from datetime import datetime, timedelta
@@ -31,8 +32,11 @@ def lambda_handler(event, context):
         end = datetime.utcnow()
         start = end - timedelta(hours=1)
         stats = cw.get_metric_statistics(
-            Namespace=namespace, MetricName=metric,
-            StartTime=start, EndTime=end, Period=300,
+            Namespace=namespace,
+            MetricName=metric,
+            StartTime=start,
+            EndTime=end,
+            Period=300,
             Statistics=["Average", "Maximum"],
             Dimensions=alarm.get("Dimensions", []),
         )
@@ -47,7 +51,9 @@ def lambda_handler(event, context):
         ]
         for dp in datapoints[-6:]:
             ts = dp["Timestamp"].strftime("%H:%M")
-            lines.append(f"    {ts} — avg: {dp.get('Average', 0):.2f}, max: {dp.get('Maximum', 0):.2f}")
+            lines.append(
+                f"    {ts} — avg: {dp.get('Average', 0):.2f}, max: {dp.get('Maximum', 0):.2f}"
+            )
 
         if state == "ALARM":
             lines.append(f"\n  ⚠️ ACTIVE — metric is breaching threshold ({threshold}).")
@@ -58,10 +64,15 @@ def lambda_handler(event, context):
         result = f"Error triaging alarm: {str(e)}"
 
     try:
-        ddb.put_item(Item={"request_id": context.aws_request_id,
-                           "timestamp": datetime.utcnow().isoformat(),
-                           "tool": "triage_alarm", "params": json.dumps(params),
-                           "result_preview": result[:500]})
+        ddb.put_item(
+            Item={
+                "request_id": context.aws_request_id,
+                "timestamp": datetime.utcnow().isoformat(),
+                "tool": "triage_alarm",
+                "params": json.dumps(params),
+                "result_preview": result[:500],
+            }
+        )
     except Exception:
         pass
     return {"response": result}
