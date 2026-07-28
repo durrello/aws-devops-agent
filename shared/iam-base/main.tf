@@ -8,7 +8,7 @@ resource "aws_iam_role" "agent" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{ Effect = "Allow", Principal = { Service = "bedrock.amazonaws.com" }, Action = "sts:AssumeRole",
-      Condition = { StringEquals = { "aws:SourceAccount" = var.account_id } } }]
+    Condition = { StringEquals = { "aws:SourceAccount" = var.account_id } } }]
   })
 }
 
@@ -18,7 +18,7 @@ resource "aws_iam_role_policy" "agent_invoke" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{ Effect = "Allow", Action = "lambda:InvokeFunction",
-      Resource = "arn:aws:lambda:${var.region}:${var.account_id}:function:${var.project}-*" }]
+    Resource = "arn:aws:lambda:${var.region}:${var.account_id}:function:${var.project}-*" }]
   })
 }
 
@@ -26,7 +26,7 @@ resource "aws_iam_role_policy" "agent_invoke" {
 resource "aws_iam_role" "tool" {
   name = "${var.project}-tool"
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version   = "2012-10-17"
     Statement = [{ Effect = "Allow", Principal = { Service = "lambda.amazonaws.com" }, Action = "sts:AssumeRole" }]
   })
 }
@@ -38,9 +38,9 @@ resource "aws_iam_role_policy_attachment" "tool_logs" {
 
 # Kill switch
 resource "aws_ssm_parameter" "enabled" {
-  name  = "/${var.project}/enabled"
-  type  = "String"
-  value = "true"
+  name        = "/${var.project}/enabled"
+  type        = "String"
+  value       = "true"
   description = "Set to 'false' to instantly disable this agent"
 }
 

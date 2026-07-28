@@ -93,9 +93,9 @@ resource "aws_iam_role_policy" "tool_readonly_ops" {
         Resource = "arn:aws:logs:${local.region}:${local.account_id}:log-group:*"
       },
       {
-        Sid    = "ReadSSMParam"
-        Effect = "Allow"
-        Action = ["ssm:GetParameter"]
+        Sid      = "ReadSSMParam"
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameter"]
         Resource = "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${var.project}/*"
       },
     ]

@@ -8,7 +8,7 @@ resource "aws_bedrock_guardrail" "agent" {
   name        = "${var.project}-guardrail"
   description = "Blocks prompt injection, off-topic requests, and attempts to bypass controls"
 
-  blocked_input_messaging  = "I can't help with that request — it's outside my allowed scope."
+  blocked_input_messaging   = "I can't help with that request — it's outside my allowed scope."
   blocked_outputs_messaging = "Response blocked by guardrails."
 
   content_policy_config {
@@ -61,9 +61,9 @@ resource "aws_bedrock_guardrail" "agent" {
 # ── Bedrock Agent ────────────────────────────────────────────────────────────
 
 resource "aws_bedrockagent_agent" "devops" {
-  agent_name              = var.project
-  agent_resource_role_arn = aws_iam_role.agent.arn
-  foundation_model        = var.bedrock_model_id
+  agent_name                  = var.project
+  agent_resource_role_arn     = aws_iam_role.agent.arn
+  foundation_model            = var.bedrock_model_id
   idle_session_ttl_in_seconds = 600
 
   instruction = <<-EOT
