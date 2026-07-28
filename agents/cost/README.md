@@ -17,6 +17,7 @@ through natural language — backed by the Cost Explorer API with guardrails.
 - "Which EC2 instances are underutilized?"
 
 ## Deploy
-```bash
-cd terraform && terraform init && terraform apply -var="region=us-east-1"
-```
+
+> **Note:** Terraform for this agent is planned. Currently only the
+> [devops agent](../devops/) has full Terraform. The Lambda code here is ready to integrate
+> into the shared architecture.

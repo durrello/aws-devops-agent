@@ -59,10 +59,13 @@ User → API Gateway → Orchestrator Lambda → Bedrock Agent (Claude 3)
 - In automated tight loops (each Bedrock call costs ~$0.003–0.01; loops get expensive)
 - For compliance sign-off (the agent assists; a human signs)
 
-## Quick start (any single agent)
+## Quick start
+
+The **devops** agent has full Terraform ready to deploy. The remaining agents (cost, security,
+incident, iac-review) include their Lambda code and documentation; Terraform for those is planned.
 
 ```bash
-cd agents/devops/terraform   # or cost, security, incident, iac-review
+cd agents/devops/terraform
 terraform init
 terraform plan -var="region=us-east-1"
 terraform apply

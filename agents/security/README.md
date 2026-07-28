@@ -16,6 +16,7 @@ prioritize what to fix, understand the risk, and get remediation guidance.
 - "Explain finding X and how to fix it"
 
 ## Deploy
-```bash
-cd terraform && terraform init && terraform apply -var="region=us-east-1"
-```
+
+> **Note:** Terraform for this agent is planned. Currently only the
+> [devops agent](../devops/) has full Terraform. The Lambda code here is ready to integrate
+> into the shared architecture.
